@@ -1,0 +1,45 @@
+name: preprocess-dataset
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  preprocess:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install deps
+        run: |
+          pip install --upgrade pip
+          pip install kaggle pillow numpy tqdm
+
+      - name: Download Kaggle dataset
+        env:
+          KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
+          KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
+        run: |
+          mkdir -p kue_raw
+          kaggle datasets download -d ilhamfp31/kue-indonesia -p kue_raw --unzip
+          ls -la kue_raw
+
+      - name: Run preprocessing
+        run: |
+          python preprocessing/automate_T-Sofia-Chairani.py \
+            --raw_dir kue_raw \
+            --out_dir preprocessing/kue_preprocessed \
+            --img_size 224
+
+      - name: Upload preprocessed dataset artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: kue_preprocessed
+          path: preprocessing/kue_preprocessed

@@ -1,0 +1,14 @@
+                  precision    recall  f1-score   support
+
+kue_dadar_gulung       1.00      0.60      0.75        20
+   kue_kastengel       0.95      0.86      0.90        22
+      kue_klepon       1.00      1.00      1.00        20
+       kue_lapis       1.00      0.95      0.97        20
+      kue_lumpur       0.74      1.00      0.85        20
+ kue_putri_salju       0.94      0.94      0.94        18
+     kue_risoles       0.74      1.00      0.85        20
+      kue_serabi       1.00      0.85      0.92        20
+
+        accuracy                           0.90       160
+       macro avg       0.92      0.90      0.90       160
+    weighted avg       0.92      0.90      0.90       160

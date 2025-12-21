@@ -1,0 +1,29 @@
+@"
+# dataset & hasil preprocess (jangan dipush)
+kue_raw/
+**/*.zip
+preprocessing/*_preprocessed/
+preprocessing/kue_preprocessed/
+
+# Membangun_model preprocess outputs (jangan dipush)
+Membangun_model/*_preprocessed/
+Membangun_model/kue_preprocessed/
+Membangun_model/**/*.npz
+*.npz
+
+# python virtual environments
+.venv/
+venv/
+env/
+
+# python cache
+__pycache__/
+*.pyc
+
+# notebook checkpoints
+.ipynb_checkpoints/
+
+# system
+.DS_Store
+Thumbs.db
+"@ | Out-File -Encoding utf8 .gitignore
