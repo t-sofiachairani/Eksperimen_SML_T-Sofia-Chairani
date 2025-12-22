@@ -1,0 +1,43 @@
+services:
+  kue_model:
+    image: tsofiachairani/workflow-ci-kue:latest
+    container_name: kue_model
+    command: >
+      sh -c "mlflow models serve
+      -m /opt/ml/model
+      --no-conda
+      --host 0.0.0.0
+      --port 8080"
+    ports:
+      - "5001:8080"
+
+  exporter:
+    image: python:3.11-slim
+    container_name: exporter
+    working_dir: /app
+    volumes:
+      - ./:/app
+    command: >
+      bash -lc "pip install -q requests prometheus_client && python 3.prometheus_exporter.py"
+    depends_on:
+      - kue_model
+    ports:
+      - "8000:8000"
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      - ./2.prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    depends_on:
+      - exporter
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
