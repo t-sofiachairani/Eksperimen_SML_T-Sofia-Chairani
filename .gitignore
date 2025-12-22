@@ -27,3 +27,12 @@ __pycache__/
 .DS_Store
 Thumbs.db
 "@ | Out-File -Encoding utf8 .gitignore
+
+# Windows junk
+desktop.ini
+Thumbs.db
+
+
+# Not included in submission
+Monitoring dan Logging/6. bukti alerting Grafana (Tidak mengambil nilai skilled atau advanced)/
+
