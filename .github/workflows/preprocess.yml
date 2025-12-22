@@ -3,7 +3,7 @@ name: preprocess-dataset
 on:
   workflow_dispatch:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
   preprocess:
@@ -20,7 +20,7 @@ jobs:
       - name: Install deps
         run: |
           pip install --upgrade pip
-          pip install kaggle pillow numpy tqdm
+          pip install kaggle pillow numpy tqdm pandas
 
       - name: Download Kaggle dataset
         env:
