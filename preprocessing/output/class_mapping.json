@@ -1,0 +1,22 @@
+{
+  "class_to_idx": {
+    "kue_dadar_gulung": 0,
+    "kue_kastengel": 1,
+    "kue_klepon": 2,
+    "kue_lapis": 3,
+    "kue_lumpur": 4,
+    "kue_putri_salju": 5,
+    "kue_risoles": 6,
+    "kue_serabi": 7
+  },
+  "idx_to_class": {
+    "0": "kue_dadar_gulung",
+    "1": "kue_kastengel",
+    "2": "kue_klepon",
+    "3": "kue_lapis",
+    "4": "kue_lumpur",
+    "5": "kue_putri_salju",
+    "6": "kue_risoles",
+    "7": "kue_serabi"
+  }
+}
