@@ -1,12 +1,11 @@
 import argparse
 import json
+import os
 from pathlib import Path
 
-import matplotlib.pyplot as plt
 import mlflow
 import numpy as np
 import tensorflow as tf
-from sklearn.metrics import confusion_matrix, classification_report
 
 from automate_preprocess import main as preprocess_main  # reuse script
 
@@ -36,17 +35,6 @@ def build_model(num_classes: int):
     return model
 
 
-def save_confmat(cm, classes, out_path: Path):
-    fig = plt.figure()
-    plt.imshow(cm)
-    plt.title("Confusion Matrix")
-    plt.xticks(range(len(classes)), classes, rotation=90)
-    plt.yticks(range(len(classes)), classes)
-    plt.tight_layout()
-    fig.savefig(out_path, dpi=200)
-    plt.close(fig)
-
-
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--raw_dir", type=str, required=True)
@@ -61,7 +49,6 @@ def main():
     args = ap.parse_args()
 
     # --- Preprocess (convert raw -> npz)
-    # panggil preprocess script dengan arg-style
     import sys
 
     sys.argv = [
@@ -85,31 +72,21 @@ def main():
 
     num_classes = len(classes)
 
-    # --- MLflow online
+    # --- MLflow online (DagsHub)
     mlflow.set_tracking_uri(args.tracking_uri)
     mlflow.set_experiment(args.experiment_name)
-    mlflow.environments._mlflow_env.set_env_vars(
-        {
-            "MLFLOW_TRACKING_USERNAME": args.dagshub_user,
-            "MLFLOW_TRACKING_PASSWORD": args.dagshub_token,
-        }
-    )
 
-    outputs = Path("outputs")
-    outputs.mkdir(exist_ok=True)
+    # Set auth via env
+    os.environ["MLFLOW_TRACKING_USERNAME"] = args.dagshub_user
+    os.environ["MLFLOW_TRACKING_PASSWORD"] = args.dagshub_token
+
+    # AUTLOG STANDAR
+    mlflow.autolog()
 
     with mlflow.start_run(run_name="ci_train"):
-        mlflow.log_params(
-            {
-                "epochs": args.epochs,
-                "batch_size": args.batch_size,
-                "num_classes": num_classes,
-            }
-        )
-
         model = build_model(num_classes)
 
-        history = model.fit(
+        model.fit(
             X_train,
             y_train,
             validation_data=(X_val, y_val),
@@ -118,35 +95,8 @@ def main():
             verbose=1,
         )
 
-        # log per-epoch metrics
-        for i in range(args.epochs):
-            mlflow.log_metric("loss", float(history.history["loss"][i]), step=i)
-            mlflow.log_metric("accuracy", float(history.history["accuracy"][i]), step=i)
-            mlflow.log_metric("val_loss", float(history.history["val_loss"][i]), step=i)
-            mlflow.log_metric(
-                "val_accuracy", float(history.history["val_accuracy"][i]), step=i
-            )
-
         loss, acc = model.evaluate(X_test, y_test, verbose=0)
-        mlflow.log_metric("test_loss", float(loss))
-        mlflow.log_metric("test_accuracy", float(acc))
-
-        y_pred = np.argmax(model.predict(X_test, verbose=0), axis=1)
-        cm = confusion_matrix(y_test, y_pred)
-        report = classification_report(y_test, y_pred, target_names=classes)
-
-        cm_path = outputs / "confusion_matrix.png"
-        rep_path = outputs / "classification_report.txt"
-        save_confmat(cm, classes, cm_path)
-        rep_path.write_text(report, encoding="utf-8")
-
-        # artifacts
-        mlflow.log_artifact(str(cm_path))
-        mlflow.log_artifact(str(rep_path))
-        mlflow.log_artifact(str(data_dir / "label_map.json"))
-
-        # model artifact
-        mlflow.tensorflow.log_model(model, artifact_path="model")
+        print(f"Test loss={loss:.4f}, test acc={acc:.4f}")
 
     print("CI training done.")
 
